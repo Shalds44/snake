@@ -25,8 +25,8 @@ class Snake {
     }
 
     initSnake(){
-        this.head = [3,25]
-        this.queue = [[1,25], [2,25]]
+        this.head = [10,25]
+        this.queue = [[1,25], [2,25],[3,25], [4,25],[5,25], [6,25],[7,25], [8,25],[9,25]]
     }
 
     getSnake(){
@@ -35,6 +35,17 @@ class Snake {
 
     getSnakeHead(){
         this.head = this.snake.slice(-1)
+        return this.head[0]
+    }
+
+    getSnakeHeadPosX(){
+        this.getSnakeHead()
+        return this.head[0][0]
+    }
+
+    getSnakeHeadPosY(){
+        this.getSnakeHead()
+        return this.head[0][1]
     }
 
     assembleSnake(){
@@ -42,27 +53,103 @@ class Snake {
         this.snake = this.queue
     }
 
-    moveUp(){
+    init(){
+        this.saveNewDirection(this.rightDirection)
+        this.saveLastDirection(this.rightDirection)
+    }
+
+    toUp(){
+        this.saveNewDirection(this.upDirection)
+    }
+
+    toDown(){
+        this.saveNewDirection(this.downDirection)
+    }
+
+    toLeft(){
+        this.saveNewDirection(this.leftDirection)
+    }
+
+    toRight(){
+        this.saveNewDirection(this.rightDirection)
+    }
+
+    updatePositionBody(body, direction){
+        if(direction == "ArrowUp"){
+            return this.upDirection(body)
+        }else if(direction == "ArrowRight"){
+            console.log(this.rightDirection(body))
+            return this.rightDirection(body)
+        }
+    }
+    move(move){
+        let lastIndex = listVirages.length - 1
+        if(listVirages.length) {
+            if(this.snake[0][0] == listVirages[lastIndex].posX && this.snake[0][1] == listVirages[lastIndex].posY){
+                this.saveLastDirection(this.getNewDirection())
+            }
+        }
+        console.log(this.snake)
         this.snake = this.snake.map((body) => {
-            if(body[0] === virage.posX){
-                return [body[0], body[1] - 1]
+
+            if(listVirages.length) {
+                if(move == "right" || move == "left"){
+                    // Le snake est décomposé élément par élément. 
+                    // Les éléments sont mis à jours 1 par 1 en fonction d'un "truc" 
+                    // Il faut traiter chaque body. qui renvoit un résultat.
+                    // Une fonction qui traite la case et renvoit sa nouvelle position.
+
+                    if(listVirages[lastIndex].posY == body[1]){
+                        return this.getNewDirection()(body)
+                    }else{
+                        return this.getLastDirection()(body)
+                    }
+                }else if(move == "up" || move == "down"){
+                    if(listVirages[lastIndex].posX == body[0]){
+                        return this.getNewDirection()(body)
+                    }else{
+                        return this.getLastDirection()(body)
+                    }
+                }
             }else{
-                return [body[0] + 1, body[1]]
+                return this.getNewDirection()(body)
             }
         })
     }
 
-    moveRight(){
-        this.snake = this.snake.map((body) => {
-            return [body[0] + 1, body[1]]
-        })
+    saveLastDirection(direction){
+        this.lastDirection = direction
+    }
+
+    getLastDirection(){
+        return this.lastDirection
+    }
+
+    saveNewDirection(direction){
+        this.newDirection = direction
+    }
+
+    getNewDirection(){
+        return this.newDirection
+    }
+
+    rightDirection(body){
+        return [body[0] + 1, body[1]]
+    }
+    leftDirection(body){
+        return [body[0] - 1, body[1]]
+    }
+    upDirection(body){
+        return [body[0], body[1] - 1] 
+    }
+    downDirection(body){
+        return [body[0], body[1] + 1] 
     }
 }
 
 const drawSnake = (snake) => {
     ctx.beginPath();
     ctx.fillStyle = "green"
-    console.log(snake)
     generateSnake(snake)
     ctx.closePath();
 }
@@ -74,29 +161,44 @@ const generateSnake = (snake) => {
 }
 
 let upDetect = false
+let downDetect = false
+let leftDetect = false
+let rightDetect = false
 
 class Virage {
-    constructor(posX, posY){
+    constructor(posX, posY, direction){
         this.posX = posX
         this.posY = posY
+        this.direction = direction
     }
 }
 
-let virage = null
+let listVirages = []
+class EventTouch {
+    constructor(){
+        this.touch = null
+    }
+
+    setTouch(touch){
+        this.touch = touch
+    }
+
+    getTouch(){
+        return this.touch
+    }
+
+}
 
 document.addEventListener("keydown", (event) => {
     const nomTouche = event.key
-    if(nomTouche === "ArrowUp"){
-        upDetect = true
-        console.log(snake)
-console.log(snake.getSnakeHead())
-        virage = new Virage(snake.getSnakeHead()[0], snake.getSnakeHead()[1])
-    }
+    eventTouch.setTouch(nomTouche)
+    listVirages.push(new Virage(snake.getSnakeHeadPosX(), snake.getSnakeHeadPosY(), nomTouche))
 })
 
 let debut
 let ecouleSeconde = 0
 let snake = new Snake()
+const eventTouch = new EventTouch()
 
 const animationRight = (chrono) => {
     if (!debut) {
@@ -112,18 +214,30 @@ const animationRight = (chrono) => {
     const elemBySec = (nbElem, time) => {
         return nbElem * time
     }
-    console.log(snake)
     if(elemBySec(1, ecouleSeconde) < 46){
         ctx.clearRect(0,0,500,500);
         drawApple(10,10,10)
-        if(upDetect){
-            snake.moveUp()
-            console.log(snake)
-        }else{
-            snake.moveRight()
-
-            console.log(snake)
+        if(eventTouch.getTouch() == "ArrowUp"){
+            snake.toUp()
+            snake.move("up")
+        }else if(eventTouch.getTouch() == "ArrowLeft"){
+            snake.toLeft()
+            snake.move("left")
+        }else if(eventTouch.getTouch() == "ArrowDown"){
+            snake.toDown()
+            snake.move("down")
+        }else if(eventTouch.getTouch() == "ArrowRight"){
+            snake.toRight()
+            snake.move("right")
         }
+        // console.log(listVirages)
+
+        // if(listVirages){
+        //     listVirages.map((virage) => {
+        //         snake.move(virage.direction)
+        //     })
+        // }
+
         drawSnake(snake.getSnake())
         setTimeout(() => {
             requestAnimationFrame(animationRight)

@@ -18,132 +18,104 @@ const drawApple = (posX, posY) => {
     ctx.closePath()
 }
 class Snake {
-
     constructor(){
         this.initSnake()
-        this.assembleSnake()
     }
 
     initSnake(){
-        this.head = [10,25]
-        this.queue = [[1,25], [2,25],[3,25], [4,25],[5,25], [6,25],[7,25], [8,25],[9,25]]
+        this.snake = [[1,25],[2,25],[3,25],[4,25],[5,25],[6,25],[7,25],[8,25],[9,25],[10,25]]
     }
 
     getSnake(){
         return this.snake
     }
 
-    getSnakeHead(){
-        this.head = this.snake.slice(-1)
-        return this.head[0]
+    addHead(direction){
+        const lastItem = getLastItemArray(this.snake)
+       
+        switch (direction) {
+            case "ArrowRight":
+                this.head = this.rightDirection(lastItem)
+                break;
+            case "ArrowLeft":
+                this.head = this.leftDirection(lastItem)
+                break;
+            case "ArrowUp":
+                this.head = this.upDirection(lastItem)
+                break;
+            case "ArrowDown":
+                this.head = this.downDirection(lastItem)
+                break;
+            default:
+                break;
+        }
+        if(this.checkSelfEat().length) return this.gameLose()
+        
+        this.snake.push(this.head)
     }
 
-    getSnakeHeadPosX(){
-        this.getSnakeHead()
-        return this.head[0][0]
+    updateSnakeDirection(direction){
+        this.addHead(direction)
+        let newSnake = []
+        for (let i = 1; i < this.snake.length; i++) {
+            newSnake.push(this.snake[i])
+        }
+        this.snake = newSnake
     }
-
-    getSnakeHeadPosY(){
-        this.getSnakeHead()
-        return this.head[0][1]
+    rightDirection(head){
+        return [head[0]+1, head[1]]
     }
-
-    assembleSnake(){
-        this.queue.push(this.head)
-        this.snake = this.queue
+    leftDirection(head){
+        return [head[0] - 1, head[1]]
     }
-
-    init(){
-        this.saveNewDirection(this.rightDirection)
-        this.saveLastDirection(this.rightDirection)
+    upDirection(head){
+        return [head[0], head[1] - 1]
     }
-
-    toUp(){
-        this.saveNewDirection(this.upDirection)
+    downDirection(head){
+        return [head[0], head[1] + 1] 
     }
-
-    toDown(){
-        this.saveNewDirection(this.downDirection)
+    growSnake(direction){
+        let elemToAdd
+        switch (direction) {
+            case "ArrowRight":
+                elemToAdd = [this.head[0]-1, this.head[1]]
+                break;
+            case "ArrowLeft":
+                elemToAdd = [this.head[0]+1, this.head[1]]
+                break;
+            case "ArrowUp":
+                elemToAdd = [this.head[0], this.head[1]+1]
+                break;
+            case "ArrowDown":
+                elemToAdd = [this.head[0], this.head[1]-1]
+                break;
+            default:
+                break;
+        }
+        this.snake.push(elemToAdd)
     }
-
-    toLeft(){
-        this.saveNewDirection(this.leftDirection)
-    }
-
-    toRight(){
-        this.saveNewDirection(this.rightDirection)
-    }
-
-    updatePositionBody(body, direction){
-        if(direction == "ArrowUp"){
-            return this.upDirection(body)
-        }else if(direction == "ArrowRight"){
-            console.log(this.rightDirection(body))
-            return this.rightDirection(body)
+    actionEatApple(apple, direction){
+        if(apple.posX === this.head[0] && apple.posY === this.head[1]){
+            this.growSnake(direction)
+            apple.randomPos()
         }
     }
-    move(move){
-        let lastIndex = listVirages.length - 1
-        if(listVirages.length) {
-            if(this.snake[0][0] == listVirages[lastIndex].posX && this.snake[0][1] == listVirages[lastIndex].posY){
-                this.saveLastDirection(this.getNewDirection())
-            }
-        }
-        console.log(this.snake)
-        this.snake = this.snake.map((body) => {
+    checkSelfEat(){
+        return this.snake.filter((body) => this.head[0] == body[0] && this.head[1] == body[1])
+    }
+    gameLose(){
+        alert("Perdu")
+    }
+}
 
-            if(listVirages.length) {
-                if(move == "right" || move == "left"){
-                    // Le snake est décomposé élément par élément. 
-                    // Les éléments sont mis à jours 1 par 1 en fonction d'un "truc" 
-                    // Il faut traiter chaque body. qui renvoit un résultat.
-                    // Une fonction qui traite la case et renvoit sa nouvelle position.
-
-                    if(listVirages[lastIndex].posY == body[1]){
-                        return this.getNewDirection()(body)
-                    }else{
-                        return this.getLastDirection()(body)
-                    }
-                }else if(move == "up" || move == "down"){
-                    if(listVirages[lastIndex].posX == body[0]){
-                        return this.getNewDirection()(body)
-                    }else{
-                        return this.getLastDirection()(body)
-                    }
-                }
-            }else{
-                return this.getNewDirection()(body)
-            }
-        })
+class Apple {
+    constructor(){
+        this.randomPos()
     }
 
-    saveLastDirection(direction){
-        this.lastDirection = direction
-    }
-
-    getLastDirection(){
-        return this.lastDirection
-    }
-
-    saveNewDirection(direction){
-        this.newDirection = direction
-    }
-
-    getNewDirection(){
-        return this.newDirection
-    }
-
-    rightDirection(body){
-        return [body[0] + 1, body[1]]
-    }
-    leftDirection(body){
-        return [body[0] - 1, body[1]]
-    }
-    upDirection(body){
-        return [body[0], body[1] - 1] 
-    }
-    downDirection(body){
-        return [body[0], body[1] + 1] 
+    randomPos(){
+        this.posX = getRandomInt(2, 30)
+        this.posY = getRandomInt(2, 30)
     }
 }
 
@@ -160,20 +132,6 @@ const generateSnake = (snake) => {
     })
 }
 
-let upDetect = false
-let downDetect = false
-let leftDetect = false
-let rightDetect = false
-
-class Virage {
-    constructor(posX, posY, direction){
-        this.posX = posX
-        this.posY = posY
-        this.direction = direction
-    }
-}
-
-let listVirages = []
 class EventTouch {
     constructor(){
         this.touch = null
@@ -192,13 +150,17 @@ class EventTouch {
 document.addEventListener("keydown", (event) => {
     const nomTouche = event.key
     eventTouch.setTouch(nomTouche)
-    listVirages.push(new Virage(snake.getSnakeHeadPosX(), snake.getSnakeHeadPosY(), nomTouche))
 })
 
 let debut
 let ecouleSeconde = 0
 let snake = new Snake()
+
+
+const apple = new Apple()
 const eventTouch = new EventTouch()
+
+
 
 const animationRight = (chrono) => {
     if (!debut) {
@@ -214,34 +176,22 @@ const animationRight = (chrono) => {
     const elemBySec = (nbElem, time) => {
         return nbElem * time
     }
+
     if(elemBySec(1, ecouleSeconde) < 46){
         ctx.clearRect(0,0,500,500);
-        drawApple(10,10,10)
-        if(eventTouch.getTouch() == "ArrowUp"){
-            snake.toUp()
-            snake.move("up")
-        }else if(eventTouch.getTouch() == "ArrowLeft"){
-            snake.toLeft()
-            snake.move("left")
-        }else if(eventTouch.getTouch() == "ArrowDown"){
-            snake.toDown()
-            snake.move("down")
-        }else if(eventTouch.getTouch() == "ArrowRight"){
-            snake.toRight()
-            snake.move("right")
+        drawApple(apple.posX,apple.posY,10)
+        
+        if(eventTouch.getTouch()){
+            snake.updateSnakeDirection(eventTouch.getTouch())
+            snake.actionEatApple(apple, eventTouch.getTouch())
         }
-        // console.log(listVirages)
 
-        // if(listVirages){
-        //     listVirages.map((virage) => {
-        //         snake.move(virage.direction)
-        //     })
-        // }
 
         drawSnake(snake.getSnake())
+
         setTimeout(() => {
             requestAnimationFrame(animationRight)
-        },1000)
+        },500)
        
     }
 

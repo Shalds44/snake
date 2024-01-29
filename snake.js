@@ -106,8 +106,7 @@ class Snake {
         return this.snake.filter((body) => this.head[0] == body[0] && this.head[1] == body[1])
     }
     checkIfOutside(){
-        console.log(this.head)
-        return this.snake.filter((body) => this.head[0] == 50 || this.head[0] == 0 && this.head[1] == 50 || this.head[1] == 0)
+        return this.snake.filter(() => this.head[0] == 50 || this.head[0] == -1 || this.head[1] == 50 || this.head[1] == -1)
 
     }
     gameLose(){
@@ -199,7 +198,7 @@ const animationRight = (chrono) => {
 
         setTimeout(() => {
             requestAnimationFrame(animationRight)
-        },100)
+        },70)
        
     }
 

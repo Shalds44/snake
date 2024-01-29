@@ -49,8 +49,10 @@ class Snake {
             default:
                 break;
         }
+        console.log(this.checkSelfEat())
         if(this.checkSelfEat().length) return this.gameLose()
-        
+        if(this.checkIfOutside().length) return this.gameLose()
+
         this.snake.push(this.head)
     }
 
@@ -78,16 +80,16 @@ class Snake {
         let elemToAdd
         switch (direction) {
             case "ArrowRight":
-                elemToAdd = [this.head[0]-1, this.head[1]]
-                break;
-            case "ArrowLeft":
                 elemToAdd = [this.head[0]+1, this.head[1]]
                 break;
+            case "ArrowLeft":
+                elemToAdd = [this.head[0]-1, this.head[1]]
+                break;
             case "ArrowUp":
-                elemToAdd = [this.head[0], this.head[1]+1]
+                elemToAdd = [this.head[0], this.head[1]-1]
                 break;
             case "ArrowDown":
-                elemToAdd = [this.head[0], this.head[1]-1]
+                elemToAdd = [this.head[0], this.head[1]+1]
                 break;
             default:
                 break;
@@ -102,6 +104,11 @@ class Snake {
     }
     checkSelfEat(){
         return this.snake.filter((body) => this.head[0] == body[0] && this.head[1] == body[1])
+    }
+    checkIfOutside(){
+        console.log(this.head)
+        return this.snake.filter((body) => this.head[0] == 50 || this.head[0] == 0 && this.head[1] == 50 || this.head[1] == 0)
+
     }
     gameLose(){
         alert("Perdu")
@@ -183,6 +190,7 @@ const animationRight = (chrono) => {
         
         if(eventTouch.getTouch()){
             snake.updateSnakeDirection(eventTouch.getTouch())
+
             snake.actionEatApple(apple, eventTouch.getTouch())
         }
 
@@ -191,7 +199,7 @@ const animationRight = (chrono) => {
 
         setTimeout(() => {
             requestAnimationFrame(animationRight)
-        },500)
+        },100)
        
     }
 
